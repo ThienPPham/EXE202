@@ -24,6 +24,9 @@ import ProductDetails from "./pages/ProductDetails/ProductDetails";
 import Shop from "./pages/Shop/Shop";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useEffect } from "react";
+import axios from 'axios'
+import { useQuery } from "@tanstack/react-query";
 
 const Layout = () => {
   return (
@@ -73,6 +76,22 @@ const router = createBrowserRouter(
 );
 
 function App() {
+
+
+  // useEffect(() => {
+  //   fetchApi()
+  // }, [])
+
+  const fetchApi = async () => {
+    const res = await axios.get(`http://localhost:3001/api/product/get-all`)
+    console.log('res', res)
+    return res.data
+  }
+
+  const query = useQuery({ queryKey: ['todos'], queryFn: fetchApi })
+
+  console.log('query', query)
+
   return (
     <div className="font-bodyFont">
       <RouterProvider router={router} />

@@ -7,12 +7,18 @@ import { store, persistor } from "./redux/store";
 import "./index.css";
 import App from "./App";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+const queryClient = new QueryClient()
 root.render(
-  <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
-      <App />
-    </PersistGate>
-  </Provider>
+  <QueryClientProvider client={queryClient}>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <App />
+      </PersistGate>
+    </Provider>
+    <ReactQueryDevtools initialIsOpen={false} />
+  </QueryClientProvider>
 );
