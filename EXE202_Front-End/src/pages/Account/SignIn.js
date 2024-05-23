@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
 import { Link } from "react-router-dom";
 import { logoLight } from "../../assets/images";
+import { useMutation } from "@tanstack/react-query";
+import * as UserService from '../../services/UserService'
+import { message } from "antd";
+import Loading from "../../components/LoadingComponent/Loading";
 
 const SignIn = () => {
   // ============= Initial State Start here =============
@@ -15,6 +19,15 @@ const SignIn = () => {
   // ============= Error Msg End here ===================
   const [successMsg, setSuccessMsg] = useState("");
   // ============= Event Handler Start here =============
+
+  const mutation = useMutation({
+    mutationFn: data => UserService.loginUser(data)
+  })
+
+  const { data, isPending } = mutation
+
+  console.log('mutation', mutation)
+
   const handleEmail = (e) => {
     setEmail(e.target.value);
     setErrEmail("");
@@ -34,14 +47,11 @@ const SignIn = () => {
     if (!password) {
       setErrPassword("Create a password");
     }
-    // ============== Getting the value ==============
-    if (email && password) {
-      setSuccessMsg(
-        `Hello dear, Thank you for your attempt. We are processing to validate your access. Till then stay connected and additional assistance will be sent to you by your mail at ${email}`
-      );
-      setEmail("");
-      setPassword("");
-    }
+
+    mutation.mutate({
+      email,
+      password
+    })
   };
   return (
     <div className="w-full h-screen flex items-center justify-center">
@@ -175,12 +185,15 @@ const SignIn = () => {
                   )}
                 </div>
 
-                <button
-                  onClick={handleSignUp}
-                  className="bg-primeColor hover:bg-black text-gray-200 hover:text-white cursor-pointer w-full text-base font-medium h-10 rounded-md  duration-300"
-                >
-                  Sign In
-                </button>
+                {data && data.status === 'ERR' && <span style={{ color: 'red' }}>{data?.message}</span>}
+                <Loading isPending={isPending}>
+                  <button
+                    onClick={handleSignUp}
+                    className="bg-primeColor hover:bg-black text-gray-200 hover:text-white cursor-pointer w-full text-base font-medium h-10 rounded-md  duration-300"
+                  >
+                    Sign In
+                  </button>
+                </Loading>
                 <p className="text-sm text-center font-titleFont font-medium">
                   Don't have an Account?{" "}
                   <Link to="/signup">

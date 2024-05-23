@@ -3,7 +3,6 @@ const userSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true,
         },
         email: {
             type: String,
@@ -21,7 +20,6 @@ const userSchema = new mongoose.Schema(
         },
         phone:{
             type: Number,
-            required: true
         },
         access_token: {
             type: String,
