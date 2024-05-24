@@ -1,4 +1,14 @@
+front-end
 npm i express dotenv bcrypt jsonwebtoken body-parser cors
 npm i mongoose
 npm i nodemon
 npm i axios dotenv
+
+npm install antd
+npm install @reduxjs/toolkit
+npm i react-redux
+
+npm i jwt-decode
+
+backend
+npm i cookie-parser

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logoLight } from "../../assets/images";
 import * as UserService from '../../services/UserService'
 import { useMutation } from "@tanstack/react-query";
 import Loading from "../../components/LoadingComponent/Loading";
+import * as message from '../../components/Message/Message.jsx'
 
 
 const SignUp = () => {
@@ -20,13 +21,23 @@ const SignUp = () => {
   const [errConfirmPassword, setErrConfirmPassword] = useState("");
   // ============= Error Msg End here ===================
   const [successMsg, setSuccessMsg] = useState("");
+  const navigate = useNavigate();
   // ============= Event Handler Start here =============
 
   const mutation = useMutation({
     mutationFn: data => UserService.signupUser(data)
   })
 
-  const { data, isPending } = mutation
+  const { data, isPending, isSuccess, isError } = mutation
+
+  useEffect(() => {
+    if(isSuccess){
+      message.success()
+      handleNavigateSignIn()
+    }else if (isError){
+      message.error()
+    }
+  }, [isSuccess, isError])
 
   const handleEmail = (e) => {
     setEmail(e.target.value);
@@ -73,26 +84,13 @@ const SignUp = () => {
           setErrConfirmPassword("Passwords do not match");
         }
       }
-      // ============== Getting the value ==============
-      if (
-        email &&
-        EmailValidation(email) &&
-        password &&
-        password.length >= 6 &&
-        confirmPassword &&
-        password === confirmPassword
-      ) {
-        setSuccessMsg(
-          `Welcome to OREBI Admin panel. We received your Sign up request. We are processing to validate your access. Additional assistance will be sent to your email at ${email}`
-        );
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-      }
     }
-
     mutation.mutate({email, password, confirmPassword})
   };
+
+  const handleNavigateSignIn = () => {
+    navigate('/signin')
+  }
 
   return (
     <div className="w-full h-screen flex items-center justify-start">
