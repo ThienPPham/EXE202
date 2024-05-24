@@ -53,8 +53,9 @@ const loginUser = async (req, res) => {
         const {refresh_token, ...newReponse} = response
         // console.log('response', response)
         res.cookie('refresh-token', refresh_token, {
-            HttpOnly: true,
-            Secure: true,
+            httpOnly: true,
+            secure: false,
+            samesite: 'strict'
         })
         return res.status(200).json(newReponse)
     } catch (e) {

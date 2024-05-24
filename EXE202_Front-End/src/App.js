@@ -27,8 +27,16 @@ import "react-toastify/dist/ReactToastify.css";
 import { useEffect } from "react";
 import axios from 'axios'
 import { useQuery } from "@tanstack/react-query";
+import { isJsonString } from "./utils";
+import * as UserService from './services/UserService'
+import { jwtDecode } from "jwt-decode";
+import { useDispatch } from "react-redux";
+import { updateUser } from "./redux/userSlice";
+
 
 const Layout = () => {
+
+
   return (
     <div>
       <ToastContainer
@@ -76,6 +84,26 @@ const router = createBrowserRouter(
 );
 
 function App() {
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    let storageData = localStorage.getItem('access_token')
+    if (storageData && isJsonString(storageData)) {
+      storageData = JSON.parse(storageData)
+      const decoded = jwtDecode(storageData)
+      console.log('decodedApp', decoded)
+      if (decoded?.id) {
+        handleGetDetailsUser(decoded?.id, storageData)
+      }
+    }
+    console.log('storageData', storageData)
+  }, [])
+
+  const handleGetDetailsUser = async (id, token) => {
+    const res = await UserService.getDetailsUser(id, token)
+    dispatch(updateUser({ ...res?.data, access_token: token }))
+  }
 
 
   // useEffect(() => {
