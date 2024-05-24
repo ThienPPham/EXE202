@@ -33,7 +33,7 @@ const createUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     try {
-        const {email, password} = req.body
+        const { email, password } = req.body
         console.log('req.body')
         const reg = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
         const isCheckEmail = reg.test(email)
@@ -50,7 +50,7 @@ const loginUser = async (req, res) => {
             })
         }
         const response = await UserService.loginUser(req.body)
-        const {refresh_token, ...newReponse} = response
+        const { refresh_token, ...newReponse } = response
         // console.log('response', response)
         res.cookie('refresh-token', refresh_token, {
             httpOnly: true,
@@ -69,7 +69,7 @@ const updateUser = async (req, res) => {
     try {
         const userId = req.params.id
         const data = req.body
-        if(!userId){
+        if (!userId) {
             return res.status(200).json({
                 status: 'ERR',
                 message: 'The userId is required'
@@ -88,7 +88,7 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
     try {
         const userId = req.params.id
-        if(!userId){
+        if (!userId) {
             return res.status(200).json({
                 status: 'ERR',
                 message: 'The userId is required'
@@ -97,7 +97,7 @@ const deleteUser = async (req, res) => {
         const response = await UserService.deleteUser(userId)
         return res.status(200).json(response)
     } catch (e) {
-        return res.status(404).json({ 
+        return res.status(404).json({
             message: e
         })
     }
@@ -110,7 +110,7 @@ const getAllUser = async (req, res) => {
         return res.status(200).json(response);
     } catch (e) {
         console.error('Error in controller getAllUser:', e); // Debug log
-        return res.status(404).json({ 
+        return res.status(404).json({
             message: e.message || e
         });
     }
@@ -119,7 +119,7 @@ const getAllUser = async (req, res) => {
 const getDetailsUser = async (req, res) => {
     try {
         const userId = req.params.id
-        if(!userId){
+        if (!userId) {
             return res.status(200).json({
                 status: 'ERR',
                 message: 'The userId is required'
@@ -128,7 +128,21 @@ const getDetailsUser = async (req, res) => {
         const response = await UserService.getDetailsUser(userId)
         return res.status(200).json(response)
     } catch (e) {
-        return res.status(404).json({ 
+        return res.status(404).json({
+            message: e
+        })
+    }
+}
+
+const logoutUser = async (req, res) => {
+    try {
+        res.clearCookie('refresh_token')
+        return res.status(200).json({
+            status: 'OK',
+            message: 'Logout successfully'
+        })
+    } catch (e) {
+        return res.status(404).json({
             message: e
         })
     }
@@ -139,5 +153,6 @@ module.exports = {
     updateUser,
     deleteUser,
     getAllUser,
-    getDetailsUser
+    getDetailsUser,
+    logoutUser
 }

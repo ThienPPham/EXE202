@@ -7,6 +7,7 @@ npm i axios dotenv
 npm install antd
 npm install @reduxjs/toolkit
 npm i react-redux
+npm install styled-components
 
 npm i jwt-decode
 

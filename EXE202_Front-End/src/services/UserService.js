@@ -17,3 +17,10 @@ export const getDetailsUser = async (id, access_token) =>{
     return res.data
 }
 
+export const logoutUser = async () =>{
+    const res = await axios.post(`http://localhost:3001/api/user/log-out`)
+    return res.data
+}
+
+
+

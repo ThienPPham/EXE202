@@ -4,9 +4,14 @@ import { HiOutlineMenuAlt4 } from "react-icons/hi";
 import { FaSearch, FaUser, FaCaretDown, FaShoppingCart } from "react-icons/fa";
 import Flex from "../../designLayouts/Flex";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { paginationItems } from "../../../constants";
 import { BsSuitHeartFill } from "react-icons/bs";
+import { Button, Popover } from "antd";
+import { WrapperContentPopup } from "./style";
+import * as UserService from '../../../services/UserService'
+import { resetUser } from "../../../redux/userSlice";
+import Loading from "../../LoadingComponent/Loading";
 
 const HeaderBottom = () => {
   const products = useSelector((state) => state.orebiReducer.products);
@@ -30,6 +35,8 @@ const HeaderBottom = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [showSearchBar, setShowSearchBar] = useState(false);
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false)
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -41,6 +48,20 @@ const HeaderBottom = () => {
     );
     setFilteredProducts(filtered);
   }, [searchQuery]);
+
+  const handleLogout = async () => {
+    setLoading(true)
+    await UserService.logoutUser()
+    dispatch(resetUser())
+    setLoading(false)
+  }
+
+  const content = (
+    <div>
+      <WrapperContentPopup onClick={handleLogout}>Log out</WrapperContentPopup>
+      <WrapperContentPopup>Content</WrapperContentPopup>
+    </div>
+  );
 
   return (
     <div className="w-full bg-[#F5F5F3] relative">
@@ -142,42 +163,48 @@ const HeaderBottom = () => {
             )}
           </div>
           <div className="flex gap-4 mt-2 lg:mt-0 items-center pr-6 cursor-pointer relative">
-
-            {user?.name ? (
-              <div>{user.name}</div>
-            ) : (
-              <div>
-                <div onClick={() => setShowUser(!showUser)} className="flex">
-                  <FaUser />
-                  <FaCaretDown />
+            <Loading isPending={loading}>
+              {user?.name ? (
+                <>
+                  <Popover content={content} trigger="click">
+                    <div>{user.name}</div>
+                  </Popover>
+                </>
+              ) : (
+                <div>
+                  <div onClick={() => setShowUser(!showUser)} className="flex">
+                    <FaUser />
+                    <FaCaretDown />
+                  </div>
+                  {showUser && (
+                    <motion.ul
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute top-6 left-0 z-50 bg-primeColor w-44 text-[#767676] h-auto p-4 pb-6"
+                    >
+                      <Link to="/signin">
+                        <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400 hover:border-b-white hover:text-white duration-300 cursor-pointer">
+                          Login
+                        </li>
+                      </Link>
+                      <Link onClick={() => setShowUser(false)} to="/signup">
+                        <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400 hover:border-b-white hover:text-white duration-300 cursor-pointer">
+                          Sign Up
+                        </li>
+                      </Link>
+                      <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400 hover:border-b-white hover:text-white duration-300 cursor-pointer">
+                        Profile
+                      </li>
+                      <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400  hover:border-b-white hover:text-white duration-300 cursor-pointer">
+                        Others
+                      </li>
+                    </motion.ul>
+                  )}
                 </div>
-                {showUser && (
-                  <motion.ul
-                    initial={{ y: 30, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="absolute top-6 left-0 z-50 bg-primeColor w-44 text-[#767676] h-auto p-4 pb-6"
-                  >
-                    <Link to="/signin">
-                      <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400 hover:border-b-white hover:text-white duration-300 cursor-pointer">
-                        Login
-                      </li>
-                    </Link>
-                    <Link onClick={() => setShowUser(false)} to="/signup">
-                      <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400 hover:border-b-white hover:text-white duration-300 cursor-pointer">
-                        Sign Up
-                      </li>
-                    </Link>
-                    <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400 hover:border-b-white hover:text-white duration-300 cursor-pointer">
-                      Profile
-                    </li>
-                    <li className="text-gray-400 px-4 py-1 border-b-[1px] border-b-gray-400  hover:border-b-white hover:text-white duration-300 cursor-pointer">
-                      Others
-                    </li>
-                  </motion.ul>
-                )}
-              </div>
-            )}
+              )}
+
+            </Loading>
 
 
 
