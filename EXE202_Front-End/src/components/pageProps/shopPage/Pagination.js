@@ -3,10 +3,27 @@ import ReactPaginate from "react-paginate";
 import Product from "../../home/Products/Product";
 import { useSelector } from "react-redux";
 import { paginationItems } from "../../../constants";
+import { useQuery } from "@tanstack/react-query";
+import * as ProductService from '../../../services/ProductService'
 
 const items = paginationItems;
 
 function Items({ currentItems, selectedBrands, selectedCategories }) {
+
+  const fetchProductAll = async () => {
+    const res = await ProductService.getAllProduct();
+    console.log('res', res);
+    return res;
+  }
+
+  const { isPending, data: products } = useQuery({
+    queryKey: ['products'],
+    queryFn: fetchProductAll,
+    retry: 3,
+    retryDelay: 1000,
+  });
+
+  console.log('data', products);
   // Filter items based on selected brands and categories
   const filteredItems = currentItems.filter((item) => {
     const isBrandSelected =
@@ -22,26 +39,28 @@ function Items({ currentItems, selectedBrands, selectedCategories }) {
 
   return (
     <>
-      {filteredItems.map((item) => (
-        <div key={item._id} className="w-full">
-          <Product
-            _id={item._id}
-            img={item.img}
-            productName={item.productName}
-            price={item.price}
-            color={item.color}
-            badge={item.badge}
-            des={item.des}
-            pdf={item.pdf}
-            ficheTech={item.ficheTech}
+      {products?.data?.map((product) => {
+        return (
+          <Product 
+          key={product._id} 
+          countInStock={product.countInStock} 
+          description={product.description} 
+          image={product.image} 
+          name={product.name}
+          price={product.price}
+          rating={product.rating}
+          type={product.type}
+          discount={product.discount}
+          selled={product.selled}
           />
-        </div>
-      ))}
+        )
+      })}
     </>
   );
 }
 
 const Pagination = ({ itemsPerPage }) => {
+
   const [itemOffset, setItemOffset] = useState(0);
   const [itemStart, setItemStart] = useState(1);
 
