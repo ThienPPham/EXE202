@@ -32,6 +32,7 @@ import * as UserService from './services/UserService'
 import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
 import { updateUser } from "./redux/userSlice";
+import AdminPage from "./pages/AdminPage/AdminPage";
 
 
 const Layout = () => {
@@ -79,6 +80,7 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/signup" element={<SignUp />}></Route>
       <Route path="/signin" element={<SignIn />}></Route>
+      <Route path="/system/admin" element={<AdminPage />} />
     </Route>
   )
 );
