@@ -1,14 +1,24 @@
 export const isJsonString = (data) => {
-    try{
+    try {
         JSON.parse(data)
-    }catch (error){
+    } catch (error) {
         return false
     }
     return true
 }
 
-export function getItem(label, key, icon, children, type){
-    return{
+export const getBase64 = (file) =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
+
+
+export function getItem(label, key, icon, children, type) {
+    return {
         key,
         icon,
         children,

@@ -6,9 +6,31 @@ import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { resetCart } from "../../redux/orebiSlice";
 import { emptyCart } from "../../assets/images/index";
 import ItemCard from "./ItemCard";
+import ModalComponent from "../../components/ModalComponent/ModalComponent";
+import { Form } from "antd";
+import InputComponent from "../../components/InputComponent/InputComponent";
+import * as UserService from "../../services/UserService";
+import { useMutation } from "@tanstack/react-query";
+import Loading from "../../components/LoadingComponent/Loading.jsx";
+import * as message from '../../components/Message/Message'
+import { updateUser } from "../../redux/userSlice.js";
 
 const Cart = () => {
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user)
+  const order = useSelector((state) => state.order)
+
+  const [isOpenModalUpdateInfo, setIsOpenModalUpdateInfo] = useState(false)
+
+  const [stateUserDetails, setStateUserDetails] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    city: ''
+  })
+
+  const [form] = Form.useForm();
+
   const products = useSelector((state) => state.orebiReducer.products);
   const [totalAmt, setTotalAmt] = useState("");
   const [shippingCharge, setShippingCharge] = useState("");
@@ -29,6 +51,78 @@ const Cart = () => {
       setShippingCharge(20);
     }
   }, [totalAmt]);
+
+  useEffect(() => {
+    if (isOpenModalUpdateInfo) {
+      setStateUserDetails({
+        city: user?.city,
+        name: user?.name,
+        address: user?.address,
+        phone: user?.phone
+      })
+    }
+  }, [isOpenModalUpdateInfo])
+
+  useEffect(() => {
+    form.setFieldsValue(stateUserDetails)
+  }, [form, stateUserDetails])
+
+  const useMutationHooks = (fnCallback) => {
+    const mutation = useMutation({
+      mutationFn: fnCallback
+    })
+    return mutation
+  }
+
+  const mutationUpdate = useMutationHooks((data) => {
+    const { id, token, ...rests } = data;
+    const res = UserService.updateUser(id, { ...rests }, token);
+    return res;
+  });
+
+  const handleAddCard = () => {
+    console.log('user', user)
+    if (user?.phone || !user.address || !user.name || !user.city) {
+      setIsOpenModalUpdateInfo(true)
+    }
+  }
+  const { isPending, data } = mutationUpdate
+  const handleCancelUpdate = () => {
+    setStateUserDetails({
+      name: "",
+      email: "",
+      phone: "",
+      isAdmin: false,
+    });
+    form.resetFields();
+    setIsOpenModalUpdateInfo(false)
+  }
+
+  console.log('data', data)
+
+  const handleUpdateInforUser = () => {
+    console.log('stateUserDetails', stateUserDetails)
+    const { name, address, city, phone } = stateUserDetails
+    if (name && address && city && phone) {
+      mutationUpdate.mutate(
+        { id: user?.id, token: user?.access_token, ...stateUserDetails }, {
+        onSuccess: () => {
+          dispatch(updateUser({name, address,city, phone}))
+          setIsOpenModalUpdateInfo(false)
+        }
+      }
+      );
+    }
+  }
+
+  const handleOnchangeDetails = (e) => {
+    setStateUserDetails({
+      ...stateUserDetails,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  console.log('stateUserDetails', stateUserDetails)
   return (
     <div className="max-w-container mx-auto px-4">
       <Breadcrumbs title="Cart" />
@@ -92,11 +186,10 @@ const Cart = () => {
                 </p>
               </div>
               <div className="flex justify-end">
-                <Link to="/paymentgateway">
-                  <button className="w-52 h-10 bg-primeColor text-white hover:bg-black duration-300">
-                    Proceed to Checkout
-                  </button>
-                </Link>
+                <button className="w-52 h-10 bg-primeColor text-white hover:bg-black duration-300"
+                  onClick={() => handleAddCard()}>
+                  Proceed to Checkout
+                </button>
               </div>
             </div>
           </div>
@@ -131,7 +224,50 @@ const Cart = () => {
           </div>
         </motion.div>
       )}
+      <ModalComponent title="Update Order Information" open={isOpenModalUpdateInfo} onCancel={handleCancelUpdate} onOk={handleUpdateInforUser}>
+        <Loading isPending={isPending}>
+          <Form
+            name="basic"
+            labelCol={{ span: 4 }}
+            wrapperCol={{ span: 20 }}
+            // onFinish={onUpdateUser}
+            autoComplete="on"
+            form={form}
+          >
+            <Form.Item
+              label="Name"
+              name="name"
+              rules={[{ required: true, message: 'Please input your name!' }]}
+            >
+              <InputComponent value={stateUserDetails['name']} onChange={handleOnchangeDetails} name="name" />
+            </Form.Item>
+            <Form.Item
+              label="City"
+              name="city"
+              rules={[{ required: true, message: 'Please input your city!' }]}
+            >
+              <InputComponent value={stateUserDetails['city']} onChange={handleOnchangeDetails} name="city" />
+            </Form.Item>
+            <Form.Item
+              label="Phone"
+              name="phone"
+              rules={[{ required: true, message: 'Please input your  phone!' }]}
+            >
+              <InputComponent value={stateUserDetails.phone} onChange={handleOnchangeDetails} name="phone" />
+            </Form.Item>
+
+            <Form.Item
+              label="Adress"
+              name="address"
+              rules={[{ required: true, message: 'Please input your  address!' }]}
+            >
+              <InputComponent value={stateUserDetails.address} onChange={handleOnchangeDetails} name="address" />
+            </Form.Item>
+          </Form>
+        </Loading>
+      </ModalComponent>
     </div>
+
   );
 };
 
