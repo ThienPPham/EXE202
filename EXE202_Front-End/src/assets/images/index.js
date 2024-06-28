@@ -78,8 +78,9 @@ import espson2 from "../images/products/imprimante/espson2.webp";
 import KawaiiPhoneCase from "../images/products/Kawaii_Phone_Case.jpg"
 
 import slider1 from "../images/banner/slider1.webp";
-
+import QRme from "../images/qrme.jpg"
 export {
+  QRme,
   logo,
   logoLight,
   bannerImgOne,
@@ -163,5 +164,5 @@ export {
   KawaiiPhoneCase,
 
   //Banner
-  slider1
+  slider1,
 };

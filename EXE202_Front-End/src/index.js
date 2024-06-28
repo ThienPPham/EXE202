@@ -7,19 +7,22 @@ import { store, persistor } from "./redux/store";
 import "./index.css";
 import App from "./App";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { PayPalScriptProvider } from "@paypal/react-paypal-js"
 import 'antd'
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 const queryClient = new QueryClient()
 root.render(
-  <QueryClientProvider client={queryClient}>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <App />
-      </PersistGate>
-    </Provider>
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>
+  <PayPalScriptProvider options={{ "client-id": process.env.REACT_APP_PAYPAL_CLIENT_ID }}>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <App />
+        </PersistGate>
+      </Provider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  </PayPalScriptProvider>
 );

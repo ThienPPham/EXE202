@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Breadcrumbs from "../../components/pageProps/Breadcrumbs";
 import { resetCart } from "../../redux/orebiSlice";
@@ -14,40 +14,49 @@ import { useMutation } from "@tanstack/react-query";
 import Loading from "../../components/LoadingComponent/Loading.jsx";
 import * as message from '../../components/Message/Message'
 import { updateUser } from "../../redux/userSlice.js";
+import { WrapperInfo } from "./style.js";
+import PaypalCheckoutButton from "../../components/PaypalCheckoutButton.js";
 
 const Cart = () => {
+  const product = {
+    description: "Design+Code React Hooks Course",
+    price: 1000
+  }
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user)
-  const order = useSelector((state) => state.order)
+  const user = useSelector((state) => state.user);
+  const order = useSelector((state) => state.order);
 
-  const [isOpenModalUpdateInfo, setIsOpenModalUpdateInfo] = useState(false)
+  const [isOpenModalUpdateInfo, setIsOpenModalUpdateInfo] = useState(false);
 
   const [stateUserDetails, setStateUserDetails] = useState({
     name: '',
     phone: '',
     address: '',
     city: ''
-  })
+  });
+
+  const navigate = useNavigate();
 
   const [form] = Form.useForm();
 
   const products = useSelector((state) => state.orebiReducer.products);
-  const [totalAmt, setTotalAmt] = useState("");
-  const [shippingCharge, setShippingCharge] = useState("");
+  const [totalAmt, setTotalAmt] = useState(0);
+  const [shippingCharge, setShippingCharge] = useState(0);
+
   useEffect(() => {
     let price = 0;
-    products.map((item) => {
+    products.forEach((item) => {
       price += item.price * item.quantity;
-      return price;
     });
     setTotalAmt(price);
   }, [products]);
+
   useEffect(() => {
     if (totalAmt <= 200) {
       setShippingCharge(30);
     } else if (totalAmt <= 400) {
       setShippingCharge(25);
-    } else if (totalAmt > 401) {
+    } else {
       setShippingCharge(20);
     }
   }, [totalAmt]);
@@ -59,70 +68,74 @@ const Cart = () => {
         name: user?.name,
         address: user?.address,
         phone: user?.phone
-      })
+      });
     }
-  }, [isOpenModalUpdateInfo])
+  }, [isOpenModalUpdateInfo, user?.address, user?.city, user?.name, user?.phone]);
+
+  const handleChangeAddress = () => {
+    setIsOpenModalUpdateInfo(true);
+  };
 
   useEffect(() => {
-    form.setFieldsValue(stateUserDetails)
-  }, [form, stateUserDetails])
+    form.setFieldsValue(stateUserDetails);
+  }, [form, stateUserDetails]);
 
   const useMutationHooks = (fnCallback) => {
-    const mutation = useMutation({
+    return useMutation({
       mutationFn: fnCallback
-    })
-    return mutation
-  }
+    });
+  };
 
   const mutationUpdate = useMutationHooks((data) => {
     const { id, token, ...rests } = data;
-    const res = UserService.updateUser(id, { ...rests }, token);
-    return res;
+    return UserService.updateUser(id, { ...rests }, token);
   });
 
   const handleAddCard = () => {
-    console.log('user', user)
-    if (user?.phone || !user.address || !user.name || !user.city) {
-      setIsOpenModalUpdateInfo(true)
+    if (!user.phone || !user.address || !user.name || !user.city) {
+      setIsOpenModalUpdateInfo(true);
+    } else {
+      navigate('/payment');
     }
-  }
-  const { isPending, data } = mutationUpdate
+  };
+
+  const { isPending, data } = mutationUpdate;
   const handleCancelUpdate = () => {
     setStateUserDetails({
       name: "",
       email: "",
       phone: "",
-      isAdmin: false,
+      address: "",
+      city: ""
     });
     form.resetFields();
-    setIsOpenModalUpdateInfo(false)
-  }
-
-  console.log('data', data)
+    setIsOpenModalUpdateInfo(false);
+  };
 
   const handleUpdateInforUser = () => {
-    console.log('stateUserDetails', stateUserDetails)
-    const { name, address, city, phone } = stateUserDetails
+    const { name, address, city, phone } = stateUserDetails;
     if (name && address && city && phone) {
       mutationUpdate.mutate(
         { id: user?.id, token: user?.access_token, ...stateUserDetails }, {
         onSuccess: () => {
-          dispatch(updateUser({name, address,city, phone}))
-          setIsOpenModalUpdateInfo(false)
+          dispatch(updateUser({ name, address, city, phone }));
+          setIsOpenModalUpdateInfo(false);
+        },
+        onError: (error) => {
+          console.error("Update failed", error);
         }
       }
       );
     }
-  }
+  };
 
   const handleOnchangeDetails = (e) => {
     setStateUserDetails({
       ...stateUserDetails,
       [e.target.name]: e.target.value
-    })
-  }
+    });
+  };
 
-  console.log('stateUserDetails', stateUserDetails)
   return (
     <div className="max-w-container mx-auto px-4">
       <Breadcrumbs title="Cart" />
@@ -159,6 +172,18 @@ const Cart = () => {
               <p className="text-sm mdl:text-base font-semibold">
                 Apply Coupon
               </p>
+              <div className="paypal-button-container">
+                <PaypalCheckoutButton product={product} />
+              </div>
+            </div>
+            <div>
+              <WrapperInfo>
+                <div>
+                  <span>Address: </span>
+                  <span style={{ fontWeight: 'bold' }}>{`${user?.address} ${user?.city}`}</span>
+                  <span onClick={handleChangeAddress} style={{ color: 'blue', cursor: 'pointer' }}> Change</span>
+                </div>
+              </WrapperInfo>
             </div>
             <p className="text-lg font-semibold">Update Cart</p>
           </div>
@@ -186,10 +211,12 @@ const Cart = () => {
                 </p>
               </div>
               <div className="flex justify-end">
-                <button className="w-52 h-10 bg-primeColor text-white hover:bg-black duration-300"
-                  onClick={() => handleAddCard()}>
-                  Proceed to Checkout
-                </button>
+                <Link to="/paymentgateway">
+                  <button className="w-52 h-10 bg-primeColor text-white hover:bg-black duration-300"
+                    onClick={handleAddCard}>
+                    Proceed to Checkout
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -230,7 +257,6 @@ const Cart = () => {
             name="basic"
             labelCol={{ span: 4 }}
             wrapperCol={{ span: 20 }}
-            // onFinish={onUpdateUser}
             autoComplete="on"
             form={form}
           >
@@ -239,27 +265,26 @@ const Cart = () => {
               name="name"
               rules={[{ required: true, message: 'Please input your name!' }]}
             >
-              <InputComponent value={stateUserDetails['name']} onChange={handleOnchangeDetails} name="name" />
+              <InputComponent value={stateUserDetails.name} onChange={handleOnchangeDetails} name="name" />
             </Form.Item>
             <Form.Item
               label="City"
               name="city"
               rules={[{ required: true, message: 'Please input your city!' }]}
             >
-              <InputComponent value={stateUserDetails['city']} onChange={handleOnchangeDetails} name="city" />
+              <InputComponent value={stateUserDetails.city} onChange={handleOnchangeDetails} name="city" />
             </Form.Item>
             <Form.Item
               label="Phone"
               name="phone"
-              rules={[{ required: true, message: 'Please input your  phone!' }]}
+              rules={[{ required: true, message: 'Please input your phone!' }]}
             >
               <InputComponent value={stateUserDetails.phone} onChange={handleOnchangeDetails} name="phone" />
             </Form.Item>
-
             <Form.Item
-              label="Adress"
+              label="Address"
               name="address"
-              rules={[{ required: true, message: 'Please input your  address!' }]}
+              rules={[{ required: true, message: 'Please input your address!' }]}
             >
               <InputComponent value={stateUserDetails.address} onChange={handleOnchangeDetails} name="address" />
             </Form.Item>
@@ -267,7 +292,6 @@ const Cart = () => {
         </Loading>
       </ModalComponent>
     </div>
-
   );
 };
 

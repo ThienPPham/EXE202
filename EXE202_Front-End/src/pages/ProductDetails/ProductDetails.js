@@ -57,8 +57,8 @@ const ProductDetails = () => {
           <div className="h-full xl:col-span-2">
             <img
               className="w-full h-full "
-              src={productInfo.img}
-              alt={productInfo.img}
+              src={productInfo.image}
+              alt={productInfo.image}
             />
           </div>
           <div className="h-full w-full md:col-span-2 xl:col-span-4 xl:px-4 flex flex-col gap-6 justify-center">
@@ -125,6 +125,6 @@ const ProductDetails = () => {
       </div>
     </div>
   );
-};
+}
 
 export default ProductDetails;

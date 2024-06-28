@@ -33,6 +33,10 @@ import { jwtDecode } from "jwt-decode";
 import { useDispatch } from "react-redux";
 import { updateUser } from "./redux/userSlice";
 import AdminPage from "./pages/AdminPage/AdminPage";
+import PaymentPage from "./pages/PaymentPage/PaymentPage";
+import Navbar from "./components/Navbar";
+import ProductDetailsPage from "./pages/ProductDetailsPage/ProductDetailsPage";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js"
 
 
 const Layout = () => {
@@ -77,10 +81,13 @@ const router = createBrowserRouter(
         <Route path="/product/:_id" element={<ProductDetails />}></Route>
         <Route path="/cart" element={<Cart />}></Route>
         <Route path="/paymentgateway" element={<Payment />}></Route>
+        <Route path="/payment" element={<PaymentPage />} />
       </Route>
       <Route path="/signup" element={<SignUp />}></Route>
       <Route path="/signin" element={<SignIn />}></Route>
       <Route path="/system/admin" element={<AdminPage />} />
+      <Route path="/design" element={<Navbar />} />
+      <Route path="/product-details/:id" element={<ProductDetailsPage />} />
     </Route>
   )
 );

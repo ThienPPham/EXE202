@@ -10,7 +10,6 @@ const createProduct = async (req, res) => {
                 message: 'The input is required'
             })
         }
-        console.log('response', req.body)
         const response = await ProductService.createProduct(req.body)
         return res.status(200).json(response)
     } catch (e) {
